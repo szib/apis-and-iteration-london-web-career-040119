@@ -2,14 +2,18 @@ require 'rest-client'
 require 'json'
 require 'pry'
 
-def get_character_movies_from_api(character_name)
-  # make the web request
+def get_film_urls(character_name)
   url = "https://swapi.co/api/people/?search=#{character_name}"
   response_string = RestClient.get(url)
   response_hash = JSON.parse(response_string)
-  films = response_hash['results'][0]['films']
+  response_hash['results'][0]['films']
+end
+
+def get_character_movies_from_api(character_name)
+  # make the web request
+  film_urls = get_film_urls(character_name)
   films_array = []
-  films.each do |film_url|
+  film_urls.each do |film_url|
     film_string = RestClient.get(film_url)
     film_hash = JSON.parse(film_string)
     films_array.push(film_hash['title'])
