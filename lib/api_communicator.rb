@@ -9,16 +9,20 @@ def get_film_urls(character_name)
   response_hash['results'][0]['films']
 end
 
-def get_character_movies_from_api(character_name)
-  # make the web request
-  film_urls = get_film_urls(character_name)
-  films_array = []
+def get_film_titles(film_urls)
+  films = []
   film_urls.each do |film_url|
     film_string = RestClient.get(film_url)
     film_hash = JSON.parse(film_string)
-    films_array.push(film_hash['title'])
+    films.push(film_hash['title'])
   end
-  films_array
+  films
+end
+
+def get_character_movies_from_api(character_name)
+  # make the web request
+  film_urls = get_film_urls(character_name)
+  get_film_titles(film_urls)
 
   # iterate over the response hash to find the collection of `films` for the given
   #   `character`
