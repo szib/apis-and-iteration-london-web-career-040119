@@ -2,23 +2,51 @@ require 'rest-client'
 require 'json'
 require 'pry'
 
-def get_film_urls(character_name)
+def get_character_data_from_api(character_name)
   url = "https://swapi.co/api/people/?search=#{character_name}"
   response_string = RestClient.get(url)
   response_hash = JSON.parse(response_string)
-  return [] if response_hash['count'].zero?
+  response_hash
+end
 
-  response_hash['results'][0]['films']
+def get_film_urls(character_name)
+  characters = get_character_data_from_api(character_name)
+  return [] if characters['count'].zero?
+
+  result = []
+  characters['results'].each do |character|
+    result << {
+      name: character['name'],
+      films: character['films']
+    }
+  end
+  result
+end
+
+def get_film_title_from_api(film_url)
+  film_string = RestClient.get(film_url)
+  film_hash = JSON.parse(film_string)
+  film_hash['title']
+end
+
+def convert_film_urls_to_titles(film_urls)
+  film_titles = []
+  film_urls.each do |film_url|
+    film_titles << get_film_title_from_api(film_url)
+  end
+  film_titles
 end
 
 def get_film_titles(film_urls)
-  films = []
-  film_urls.each do |film_url|
-    film_string = RestClient.get(film_url)
-    film_hash = JSON.parse(film_string)
-    films.push(film_hash['title'])
+  result = []
+  film_urls.each do |character_data|
+    titles = convert_film_urls_to_titles(character_data[:films])
+    result << {
+      name: character_data[:name],
+      titles: titles
+    }
   end
-  films
+  result
 end
 
 def get_character_movies_from_api(character_name)
@@ -41,8 +69,14 @@ def get_character_movies_from_api(character_name)
   #  of movies by title. Have a play around with the puts with other info about a given film.
 end
 
-def print_movies(films)
-  puts films
+def print_movies(characters_data)
+  characters_data.each do |character_data|
+    puts ''
+    puts "Name:\t#{character_data[:name]}"
+    puts 'Films:'
+    character_data[:titles].each { |title| puts "\t#{title}" }
+    puts ''
+  end
   # some iteration magic and puts out the movies in a nice list
 end
 
