@@ -6,6 +6,8 @@ def get_film_urls(character_name)
   url = "https://swapi.co/api/people/?search=#{character_name}"
   response_string = RestClient.get(url)
   response_hash = JSON.parse(response_string)
+  return [] if response_hash['count'].zero?
+
   response_hash['results'][0]['films']
 end
 
@@ -22,7 +24,11 @@ end
 def get_character_movies_from_api(character_name)
   # make the web request
   film_urls = get_film_urls(character_name)
-  get_film_titles(film_urls)
+  if film_urls.length.zero?
+    puts "\"#{character_name}\" has not appeared in any Star Wars film. Typo? :)"
+  else
+    get_film_titles(film_urls)
+  end
 
   # iterate over the response hash to find the collection of `films` for the given
   #   `character`
